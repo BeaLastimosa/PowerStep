@@ -1,0 +1,92 @@
+const int ldrPin = A0;   // LDR pin
+const int ir1Pin = 2;    // Pin for IR sensor 1
+const int ir2Pin = 3;    // Pin for IR sensor 2
+
+//Define LED pins
+const int led1 = 9;    // LED1 pin
+const int led2 = 10;   // LED2 pin
+const int led3 = 11;   // LED3 pin
+const int led 4 = 6;   // LED4 pin
+
+const int ldrThreshold = 300;  // LDR threshold
+unsigned long ir2ActivationTime = 0;
+bool led1And2Brightened = false;  // Flag for LED1 and LED2 brightened state
+
+void setup() { 
+    Serial.begin(9600); 
+    pinMode(led1, OUTPUT); 
+    pinMode(led2, OUTPUT); 
+    pinMode(led3, OUTPUT); 
+    pinMode(led4, OUTPUT); 
+    pinMode(ir1Pin, INPUT); 
+    pinMode(ir2Pin, INPUT); 
+} 
+ 
+void loop() { 
+    int ldrValue = analogRead(ldrPin);    // Read the LDR value 
+    int ir1Value = digitalRead(ir1Pin);   // Read IR sensor 1 value 
+    int ir2Value = digitalRead(ir2Pin);   // Read IR sensor 2 value 
+ 
+    Serial.print("LDR Value: "); 
+    Serial.print(ldrValue); 
+    Serial.print(" | IR1 Value: "); 
+    Serial.print(ir1Value); 
+    Serial.print(" | IR2 Value: "); 
+    Serial.println(ir2Value); 
+ 
+    // Check if LDR value is below the threshold 
+    if (ldrValue < ldrThreshold) { 
+        // Check if both IR sensors are triggered 
+        if (ir1Value == LOW && ir2Value == LOW) { 
+            analogWrite(led1, 225); 
+            analogWrite(led2, 225); 
+            analogWrite(led3, 225); 
+            analogWrite(led4, 225); 
+            led1And2Brightened = true; 
+            return; 
+        } 
+ 
+        // Set LEDs 1 and 2 to a brightness of 10 initially 
+         if (!led1And2Brightened) { 
+            analogWrite(led1, 10); 
+            analogWrite(led2, 10); 
+        } 
+ 
+        // Brighten LED1 and LED2 to 225 if IR1 is triggered 
+        if (ir1Value == LOW) { 
+            analogWrite(led1, 225); 
+            analogWrite(led2, 225); 
+            led1And2Brightened = true; 
+        } 
+ 
+        // Dim LED1 and LED2 back to 10 if IR2 is triggered 
+        if (ir2Value == LOW) { 
+            analogWrite(led1, 10); 
+            analogWrite(led2, 10); 
+            led1And2Brightened = false; 
+            ir2ActivationTime = millis(); // Record the activation time
+        } 
+ 
+        // Set LEDs 3 and 4 to a brightness of 10 initially 
+        analogWrite(led3, 10); 
+        analogWrite(led4, 10); 
+ 
+        // Keep LEDs 3 and 4 brightened for 10 seconds after IR2 is triggered 
+        if (millis() - ir2ActivationTime < 10000) { 
+            analogWrite(led3, 225); 
+            analogWrite(led4, 225); 
+        } else { 
+            analogWrite(led3, 10); 
+            analogWrite(led4, 10); 
+        } 
+ 
+    } else { // If LDR value is above the threshold, turn off all LEDs 
+        analogWrite(led1, LOW); 
+        analogWrite(led2, LOW); 
+        analogWrite(led3, LOW); 
+        analogWrite(led4, LOW); 
+        led1And2Brightened = false; // Reset the flag
+    } 
+ 
+    delay(100); // Small delay for stability 
+}
