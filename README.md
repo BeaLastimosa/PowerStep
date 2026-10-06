@@ -1,4 +1,5 @@
 # Smart Street Lighting System with Piezoelectric Energy Harvesting
+by Bea Lastimosa, Anna Hermoso, Angel Valdez
 
 ## Abstract
 
